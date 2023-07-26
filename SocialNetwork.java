@@ -12,22 +12,33 @@ public class SocialNetwork
     }
 
     //Part 1 Scanning and Adding into dataset/graph
-    public void scanFile(String fileName) throws FileNotFoundException
+    public void scanFile(Scanner scin) throws FileNotFoundException
     {
-        int i,n,c,a,b;
-        Scanner sc = new Scanner(new File(fileName));
-
-        n = sc.nextInt();
-        c = sc.nextInt();
-
-        for(i=0;i<c;i++)
+        int i,n,c;
+        File readFile;
+        do
         {
-            a = sc.nextInt();
-            b = sc.nextInt();
-            createEdge(a,b);
-        }
+            System.out.print("Input File Path: ");
+            readFile = new File(scin.nextLine());
 
-        sc.close();
+            if(!readFile.exists())
+            {
+                System.out.println("File does not exist\n");
+            }
+
+        }while(!readFile.exists());
+
+        try(Scanner scanFile = new Scanner(readFile);)
+        {
+            n = scanFile.nextInt();
+            c = scanFile.nextInt();
+
+            for(i=0;i<c;i++)
+            {
+                createEdge(scanFile.nextInt(),scanFile.nextInt());
+            }
+            scanFile.close();
+        }
     }
 
     //Helper Function to create an edge for 2 nodes
@@ -42,50 +53,42 @@ public class SocialNetwork
     {
         if(!network.containsKey(ID))
         {
-            System.out.println("");
-            System.out.println("Person "+ID+" does not exist");
+            System.out.println("\nPerson "+ID+" does not exist");
             return;
         }
 
         //Sorting and Displaying
-        Set<Integer> friends = network.get(ID);
-        //TreeSet<Integer> sortedSet = new TreeSet<>();
-        //sortedSet.addAll(friends);
-        System.out.println("");
-        System.out.println("Person "+ID+" has "+friends.size()+" friends");
-        System.out.println("List of friends: "+ friends);
+        System.out.println("\nPerson "+ID+" has "+network.get(ID).size()+" friends");
+        System.out.println("List of friends: "+ network.get(ID));
     }
 
     public void checkConnection(int personA, int personB)
     {
         if(!network.containsKey(personA) || !network.containsKey(personB))
         {
-            System.out.println("Person A or B is not a real person");
-            System.out.println("");
+            System.out.println("Person A or B is not a real person\n");
             return;
         }
 
-        if(personA == personB)
+        else if(personA == personB)
         {
-            System.out.println("Person A and B are the same people");
-            System.out.println("");
+            System.out.println("Person A and B are the same people\n");
             return;
         }
 
-        List<Integer> path = checkPath(personA, personB, new HashSet<>(), new ArrayList<>());
+        List<Integer> path = checkPath(personA, personB, new HashSet<Integer>(), new ArrayList<Integer>());
         if (path.isEmpty()) 
         {
-            System.out.println("Cannot find a connection between " + personA + " and " + personB);
+            System.out.println("Cannot find a connection between "+personA+" and "+personB+"\n");
             System.out.println();
         } 
         
         else 
         {
-            System.out.println("There is a connection from " + personA + " to " + personB + "!");
-            for (int i = 0; i < path.size() - 1; i++) {
-                int current = path.get(i);
-                int next = path.get(i + 1);
-                System.out.println(current + " is friends with " + next);
+            System.out.println("There is a connection from "+personA+" to "+personB+"!");
+            for (int i = 0; i < path.size() - 1; i++) 
+            {
+                System.out.println(path.get(i) +" is friends with "+path.get(i + 1));
             }
             System.out.println();
         }
@@ -106,7 +109,7 @@ public class SocialNetwork
         {
             if (!visit.contains(neighbor)) 
             {
-                List<Integer> newPath = checkPath(neighbor, personA, visit, path);
+                List<Integer> newPath = checkPath(neighbor, personB, visit, path);
                 if (!newPath.isEmpty()) 
                 {
                     return newPath;
@@ -119,38 +122,43 @@ public class SocialNetwork
 
     public static void main(String args[]) throws FileNotFoundException
     {
-        int choice;
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Input File Path: ");
-        String path = sc.nextLine();
-        SocialNetwork network = new SocialNetwork();
-        network.scanFile(path);
+        int choice=0;
+        SocialNetwork graph = new SocialNetwork();
+        Scanner scin = new Scanner(System.in);
+        graph.scanFile(scin);
         System.out.println("Graph is Loaded!");
 
         do
         {
-            System.out.println("MAIN MENU");
-            System.out.println("[1] Get friend list");
-            System.out.println("[2] Get connection");
-            System.out.println("[3] Exit");
-            System.out.println();
-            System.out.print("Enter your choice: ");
-            choice = sc.nextInt();
+            try
+            {
+                System.out.println("MAIN MENU");
+                System.out.println("[1] Get friend list");
+                System.out.println("[2] Get connection");
+                System.out.println("[3] Exit\n");
+
+                System.out.print("Enter your choice: ");
+                choice = scin.nextInt();
+            }
+            catch(InputMismatchException e)
+            {
+                String buffer = scin.nextLine();
+                System.out.print("Please Enter a number between 1-3\n");
+            }
 
             if(choice == 1)
             {
                 System.out.print("Enter ID of person: ");
-                int id = sc.nextInt();
-                network.displayFriends(id);
+                graph.displayFriends(scin.nextInt());
             }
 
             else if(choice == 2)
             {
                 System.out.print("Enter ID of first person: ");
-                int personA = sc.nextInt();
+                int personA = scin.nextInt();
                 System.out.print("Enter ID of second person: ");
-                int personB = sc.nextInt();
-                network.checkConnection(personA, personB);
+                int personB = scin.nextInt();
+                graph.checkConnection(personA, personB);
             }
 
             else if(choice == 3)
@@ -158,12 +166,12 @@ public class SocialNetwork
                 System.out.println("Terminating Program");
             }
 
-            else
+            else if(choice < 1 || choice > 3)
             {
                 System.out.println("Invalid Input, please try again");
             }
         }while(choice != 3);
 
-        sc.close();
+        scin.close();
     }
 }
