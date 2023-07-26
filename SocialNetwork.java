@@ -61,29 +61,61 @@ public class SocialNetwork
         if(!network.containsKey(personA) || !network.containsKey(personB))
         {
             System.out.println("Person A or B is not a real person");
+            System.out.println("");
+            return;
         }
 
         if(personA == personB)
         {
             System.out.println("Person A and B are the same people");
             System.out.println("");
+            return;
         }
 
-        //Helper Function goes in here
-    }
-
-    /* 
-    //Helper function to check the path
-    private ArrayList<Integer> checkPath(int personA, int personB, ArrayList<Integer> path, ArrayList<Integer> visit)
-    {
-        int i,j,control;
-
-        for(i=0;i<network.get(personA).size();i++)
+        List<Integer> path = checkPath(personA, personB, new HashSet<>(), new ArrayList<>());
+        if (path.isEmpty()) 
         {
-
+            System.out.println("Cannot find a connection between " + personA + " and " + personB);
+            System.out.println();
+        } 
+        
+        else 
+        {
+            System.out.println("There is a connection from " + personA + " to " + personB + "!");
+            for (int i = 0; i < path.size() - 1; i++) {
+                int current = path.get(i);
+                int next = path.get(i + 1);
+                System.out.println(current + " is friends with " + next);
+            }
+            System.out.println();
         }
     }
-    */
+    
+    //Helper function to check the path (DFS referenced from online)
+    private List<Integer> checkPath(int personA, int personB, Set<Integer> visit, List<Integer> path)
+    {   
+        visit.add(personA);
+        path.add(personA);
+
+        if (personA== personB) 
+        {
+            return new ArrayList<>(path);
+        }
+
+        for (int neighbor : network.get(personA)) 
+        {
+            if (!visit.contains(neighbor)) 
+            {
+                List<Integer> newPath = checkPath(neighbor, personA, visit, path);
+                if (!newPath.isEmpty()) 
+                {
+                    return newPath;
+                }
+            }
+        }
+        path.remove(path.size() - 1);
+        return path;
+    }
 
     public static void main(String args[]) throws FileNotFoundException
     {
